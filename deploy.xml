@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<deploy name="">
+	
+	<basic describe="基本信息">
+		<packType describe="包类型" options="pack:全量包;patch:补丁包">pack</packType>
+		<systemType describe="系统类型">通用</systemType>
+		<appType describe="应用类型">云永</appType>
+		<appName describe="应用名称">update</appName>
+		<appDescribe describe="应用说明">ACM升级通用包</appDescribe>
+		<version describe="应用版本">1.0</version>
+		<packInEffect describe="影响的主包（只有补丁需要配置，填写主包的版本号）"></packInEffect>
+	</basic>
+
+	<!-- 全系统全局参数配置，参数可以包括input、select、mselect(可多选）、grid -->
+	<globalConfig describe="系统全局配置">
+		<variables describe="集群基本参数">
+				<field name="user" label="执行用户(业务用户)" type="input" validate="" >cprs</field>
+				<field name="workspace" label="应用安装目录" type="input" validate="" >/home/cprs</field>
+				<field name="install_timeout" label="安装脚本执行等待时间(s)" type="hidden" validate="">30</field>
+				<field name="mode" label="运行模式" type="select"  options="0:升级;1:部署">0</field>
+				<field name="function" label="function" type="hidden" validate="">/tmp/acmupdate/function</field>
+				<field name="info" label="info" type="hidden" validate="">/tmp/acmupdate/info</field>
+				<field name="basicapp" label="basicapp" type="hidden" validate="">/tmp/acmupdate/basicapp</field>
+				<field name="config" label="config" type="hidden" validate="">/tmp/acmupdate/config</field>
+
+		</variables>
+	</globalConfig>
+
+	<!-- 配置系统包含的部署集群、分片、分布式框架等 -->
+	<subSystems describe="子系统集合">
+		<system id="common" type="war" name="common" mode="cluster" front="">
+			<scale minSize="0" maxSize="200" describe="集群规模"></scale>
+			<dependency describe="基础依赖项，部署程序仅将基础基础资源上传，操作由脚本完成">
+			</dependency>
+			<scripts describe="集群脚本集">
+				<script name="beforeInstall" path="" describe="安装前处理" />
+				<script name="install" path="./tmp/acmupdate/scripts/install.sh" describe="部署" />
+				<script name="afterInstall" path="" describe="安装后处理" />
+				<script name="start" path="" describe="启动" />
+				<script name="validateStart" path="" describe="启动状态检测" />
+				<script name="stop" path="" describe="停止" />
+				<script name="validateStop" path="" describe="停止状态监测" />
+				<script name="backup" path=" " describe="备份" />
+				<script name="rollback" path="" describe="回滚" />
+				<script name="uninstall" path="" describe="卸载" />
+			</scripts>
+			<variables describe="集群基本参数">
+				<field name="roll_back" label="回退（0：不回退，1：回退）" type="input" validate="" >0</field>
+			</variables>
+			<config path="./tmp/acmupdate/scripts/install.sh" encoding="UTF-8" template=""></config>
+			<node describe="节点私有配置信息">
+				<config path="./tmp/acmupdate/scripts/install.sh" encoding="UTF-8" template=""></config>
+			</node>
+		</system>
+	</subSystems>
+</deploy>
