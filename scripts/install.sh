@@ -58,8 +58,6 @@ elif [ $user = "xhjy" ] ;then
         fi
 fi 
 
-
-
 shell_log(){
     LOG_INFO=$1
     echo "[$(date "+%Y-%m-%d %H:%M:%S:%N")] [${ip_addr}] -- ${LOG_INFO}" >> ${ACM_LOG_PATH}
@@ -67,17 +65,19 @@ shell_log(){
 
 # 若需要在子shell进程中使用当前环境中的变量或者函数，则必须使用source执行脚本而不能使用sh
 
-# update 更新应用 
-if [[  "x$mode" == "x0" ]];then
+if [[  "x$mode" == "x0" ]];then  # update 更新应用
     shell_log "enter into update mode"
     # todo : 整合现有升级脚本
     
-elif [[ "x$mode" == "x1" ]];then
-# deploy 部署应用
+elif [[ "x$mode" == "x1" ]];then # deploy 部署应用
     shell_log "enter into deploy mode"
-    # source ${workspace}${function}/deploy/install_jdk.sh
-    # source ${workspace}${function}/deploy/deploy_wars.sh
-
+    if [ -d ${workspace}/tmp/acmupdate/wars/conf ];then
+        source ${workspace}${function}/deploy/import_config.sh
+    else
+        source ${workspace}${function}/deploy/install_jdk.sh
+        source ${workspace}${function}/deploy/deploy_wars.sh
+        source ${workspace}${function}/deploy/export_config.sh
+    fi
 else
     shell_log "input para error!"
     exit 1
