@@ -1,2 +1,2 @@
-192.168.100.101|chengdudao,chongqingdao,munandao,dalidao
-192.168.100.102|alps,hq,uc-as,uc-webapp,uc-admin
+192.168.100.101|chengdudao,chongqingdao
+192.168.100.102|munandao,dalidao

@@ -34,7 +34,3 @@ do
     done
     
 done
-
-
-
-

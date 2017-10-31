@@ -52,4 +52,4 @@ else
     shell_log "ip对应wars未配置"
     echo "ip ${ip_addr} 对应wars未配置,跳过"
 fi
-
+cd ${workspace}

@@ -18,8 +18,8 @@ if [[ -f ${workspace}${basicapp}/jdk1.6.0_30.tar.gz ]];then
     echo "export PATH=\$PATH:\$JAVA_HOME/bin " >> ${workspace}/.bash_profile
 
 else 
-    shell_log "找不到jdk1.6.0_30.tar.gz，跳过安装jdk1.6"
-    echo "找不到jdk1.6.0_30.tar.gz, 跳过安装jdk1.6"
+    shell_log "basicapp目录下找不到jdk1.6.0_30.tar.gz，跳过安装jdk1.6"
+    echo "basicapp目录下找不到jdk1.6.0_30.tar.gz, 跳过安装jdk1.6"
 
 fi
 
@@ -27,8 +27,8 @@ if [[ -f ${workspace}${basicapp}/jdk-7u79-linux-x64.gz ]];then
     tar xzvf  ${workspace}${basicapp}/jdk-7u79-linux-x64.gz > /dev/null  && shell_log "解压 jdk-7u79-linux-x64.gz 成功"
     mv jdk1.7.0_79  jdk1.7
 else 
-    shell_log "找不到jdk-7u79-linux-x64.gz，跳过安装jdk1.7"
-    echo "找不到jdk-7u79-linux-x64.gz, 跳过安装jdk1.7"
+    shell_log "basicapp目录下找不到jdk-7u79-linux-x64.gz，跳过安装jdk1.7"
+    echo "basicapp目录下找不到jdk-7u79-linux-x64.gz, 跳过安装jdk1.7"
 
 fi
 

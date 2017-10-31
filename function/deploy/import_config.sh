@@ -10,31 +10,29 @@
 # version 2.2.1  update and deploy  combined
 
 workspace=`pwd`
-app_check=${workspace}/tmp/acmupdate/info/app_check.txt
-rm -rf ${app_check} && touch ${app_check}
-config_files=("ares-app-config.xml" "server.properties" "log4j.properties")
+template_path="${workspace}/tmp/acmupdate/wars/conf"
+
 # 获取app_name ，过滤备份目录
 for app_name in `ls  ${workspace}/deploy|egrep [a-zA-Z]|egrep -v [0-9]$|egrep -v bak$`
 do
     # app_check
     app_path=${workspace}/deploy/${app_name}
     tom_path=${workspace}/tomcats/tomcat-${app_name}
-    echo ${app_name}"|"${app_path}"|"${tom_path} >> ${app_check}
-    shell_log "[${app_name}] checked....app_path: ${app_path} , tom_path: ${tom_path}  "  # log
-    log_path=${workspace}/logs/${app_name}
-    sed -i "\?${app_name}? s?\$?|${log_path}?" ${app_check}
+    template_path="${workspace}/tmp/acmupdate/wars/conf/${app_name}/${ip_addr}"
 
-    # get_conf
-    config_path="/share/update_deploy_wars/conf/${app_name}/${ip_addr}"
-    [[ ! -d ${config_path} ]] &&   mkdir -p ${config_path}
-    for config_file in  `echo ${config_files[*]}`
-    do
-        [ -f ${app_path}/WEB-INF/classes/$config_file ]  && cp -p  ${app_path}/WEB-INF/classes/$config_file ${config_path}
-        [ -f ${app_path}/WEB-INF/conf/$config_file ]  && cp  -p ${app_path}/WEB-INF/conf/$config_file ${config_path}
-    done
+    if [ ! -d ${template_path} ];then
+        shell_log "[${app_name}] template dir not found , passed..."
+    else
+        for  config_file in  $(ls ${template_path})  
+        do
+            [ -f ${app_path}/WEB-INF/classes/${config_file} ]  && cp -p  ${template_path}/$config_file  ${app_path}/WEB-INF/classes/${config_file} &&  shell_log "[$app_name] $config_file copied"
+            [ -f ${app_path}/WEB-INF/conf/${config_file} ]  && cp -p  ${template_path}/$config_file  ${app_path}/WEB-INF/conf/${config_file} &&  shell_log "[$app_name] $config_file copied"
+            [ -f ${tom_path}/conf/${config_file} ]  && cp -p  ${template_path}/$config_file  ${tom_path}/conf/${config_file}  &&  shell_log "[$app_name] $config_file copied"
+            [ -f ${tom_path}/bin/${config_file} ]  && cp -p  ${template_path}/$config_file  ${tom_path}/bin/${config_file}  &&  shell_log "[$app_name] $config_file copied"
+        done
+    fi
     
 done
-
 
 
 
