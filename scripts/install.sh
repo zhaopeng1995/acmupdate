@@ -1,7 +1,7 @@
 #!/bin/bash
 #-----------------------------------------------------------------
 # Filename:    install.sh
-# Version:    2.1
+# Version:    2.2.1
 # Date:        2017/08/23
 # Author:      ZhaoPeng
 # Description: 
@@ -26,6 +26,7 @@ if [ $user = "cprs" ] || [ $user = "whly" ];then
         if [ -d /share/update_deploy_wars/acmupdate_logs/ ];then
             
             ACM_LOG_PATH="/share/update_deploy_wars/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"  # 产权的共享目录
+            SQL_LOG_PATH="/share/update_deploy_wars/acmupdate_logs/${user}_sql_$(date +%Y-%m-%d).log"  # sql日志目录
         else
             mkdir -p /share/update_deploy_wars/acmupdate_logs/
             
@@ -58,16 +59,46 @@ elif [ $user = "xhjy" ] ;then
         fi
 fi 
 
+# 记录脚本运行日志
 shell_log(){
     LOG_INFO=$1
     echo "[$(date "+%Y-%m-%d %H:%M:%S:%N")] [${ip_addr}] -- ${LOG_INFO}" >> ${ACM_LOG_PATH}
 }
+# 记录sql执行日志
+sql_log(){
+    SQLFILE=$1
+    LOG_INFO=$3
+    USER=$2
+    echo  "[$(date "+%Y-%m-%d %H:%M:%S:%N")] [${SQLFILE}] [${USER}] -- ${LOG_INFO}" >> ${SQL_LOG_PATH}
+}
 
 # 若需要在子shell进程中使用当前环境中的变量或者函数，则必须使用source执行脚本而不能使用sh
 
+config_file_path="${workspace}${config}/database.ini"
+exec_host=$(sed -n '5p' ${config_file_path}|cut -d"=" -f2|tr -d '\r')
+if  [[ "x$exec_sql" == "x0" ]] && [[ $ip_addr == ${exec_host}  ]];then  # 执行sql
+    source ${workspace}${function}/update/exec_sql.sh
+fi
+
 if [[  "x$mode" == "x0" ]];then  # update 更新应用
     shell_log "enter into update mode"
+    source ${workspace}${function}/update/app_check.sh
+    source ${workspace}${function}/update/update_check.sh
+    source ${workspace}${function}/update/app_kill.sh
     # todo : 整合现有升级脚本
+    if [ "${roll_back}" = "0" ];then
+        source ${workspace}${function}/update/acm_update.sh
+    else
+        source ${workspace}${function}/update/roll_back.sh
+    fi
+
+    source ${workspace}${function}/update/update_change.sh
+
+    if [ "${user}" = "cprs"  ];then
+        source ${workspace}${function}/update/start_asyn.sh
+    else
+        source ${workspace}${function}/update/start_syn.sh
+    fi
     
 elif [[ "x$mode" == "x1" ]];then # deploy 部署应用
     shell_log "enter into deploy mode"

@@ -18,6 +18,7 @@
 				<field name="workspace" label="应用安装目录" type="input" validate="" >/home/cprs</field>
 				<field name="install_timeout" label="安装脚本执行等待时间(s)" type="hidden" validate="">30</field>
 				<field name="mode" label="运行模式" type="select"  options="0:升级;1:部署">0</field>
+				<field name="exec_sql" label="是否执行sql文件" type="select"  options="0:执行;1:不执行">0</field>
 				<field name="function" label="function" type="hidden" validate="">/tmp/acmupdate/function</field>
 				<field name="info" label="info" type="hidden" validate="">/tmp/acmupdate/info</field>
 				<field name="basicapp" label="basicapp" type="hidden" validate="">/tmp/acmupdate/basicapp</field>
