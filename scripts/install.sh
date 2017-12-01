@@ -1,13 +1,14 @@
 #!/bin/bash
 #-----------------------------------------------------------------
 # Filename:    install.sh
-# Version:    2.2.1
+# Version:    2.2.2
 # Date:        2017/08/23
 # Author:      ZhaoPeng
 # Description: 
 #-----------------------------------------------------------------
 # version 2.1   add  logging function
 # version 2.2.1  update and deploy  combined
+# version 2.2.2  exec sqlfile
 
 # user=`whoami`
 ip_addr=`python  ${workspace}${function}/common/get_ip_address.py eth0`  # todo : 通过内置变量${primary_ip_address}获取ip地址取出以解除网卡名称限制
@@ -74,10 +75,15 @@ sql_log(){
 
 # 若需要在子shell进程中使用当前环境中的变量或者函数，则必须使用source执行脚本而不能使用sh
 
-config_file_path="${workspace}${config}/database.ini"
-exec_host=$(sed -n '5p' ${config_file_path}|cut -d"=" -f2|tr -d '\r')
-if  [[ "x$exec_sql" == "x0" ]] && [[ $ip_addr == ${exec_host}  ]];then  # 执行sql
-    source ${workspace}${function}/update/exec_sql.sh
+config_file_path="${workspace}/tmp/acmupdate/sqls/database.ini"
+exec_host=$(cat $config_file_path|sed -n '2p'|cut -d'=' -f2)
+if  [[ "x$exec_sql" == "x0" ]] && [[ $ip_addr == ${exec_host}  ]] && [[ "x$db_type" == "x0" ]];then  # 执行sql
+    shell_log "start  exec_sql_oracle .."
+    source ${workspace}${function}/update/exec_sql_oracle.sh
+fi
+if  [[ "x$exec_sql" == "x0" ]] && [[ $ip_addr == ${exec_host}  ]] && [[ "x$db_type" == "x1" ]];then  # 执行sql
+    shell_log "start  exec_sql_mysql .."
+    source ${workspace}${function}/update/exec_sql_mysql.sh
 fi
 
 if [[  "x$mode" == "x0" ]];then  # update 更新应用

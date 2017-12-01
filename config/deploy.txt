@@ -1,2 +1,2 @@
-192.168.100.101|chengdudao,chongqingdao
-192.168.100.102|munandao,dalidao
+192.168.100.101|chengdudao:8080,chongqingdao:8081
+192.168.100.102|munandao:8082,dalidao:8083

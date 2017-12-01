@@ -26,7 +26,7 @@ DeployPath=${workspace}/deploy
 LogPath=${workspace}/logs
 tomcat_file=`ls ${workspace}${basicapp}|grep apache-tomcat-.*`
 
-# 创建目录
+# 如果目录不存在，创建目录
 [[ ! -d ${TomcatPath} ]]  &&  mkdir -p  ${TomcatPath}
 [[ ! -d ${DeployPath} ]]  &&  mkdir -p  ${DeployPath}
 [[ ! -d ${LogPath} ]]  &&  mkdir -p  ${LogPath}
@@ -36,7 +36,9 @@ if [[ ${deploy_war_nums} -gt 0  ]];then
 
     for  iter_i  in `seq 1 1 ${deploy_war_nums}`
     do
-        deploy_name=`echo $wars|awk -v count=${iter_i} -F','  '{print $count}'` # 新项目部署应用名字和war包名字保持一致
+        deploy_name_port=`echo $wars|awk -v count=${iter_i} -F','  '{print $count}'`  # dalidao:8080
+        deploy_name=`echo $deploy_name_port|cut -d',' -f1` # 新项目部署应用名字和war包名字保持一致
+        deploy_port=`echo $deploy_name_port|cut -d',' -f2|tr -d '\r'`  # 获取应用端口号
         war_name=`ls ${workspace}/tmp/acmupdate/wars/ | egrep "${deploy_name}[\.|_|-]v?([0-9])+.*war$"`  # todo:  验证正则匹配的准确性，现有匹配规则可能未覆盖到全部项目的包
         shell_log "匹配到的war名字是${war_name}"
         unzip -o  -d ${workspace}/deploy/${deploy_name}  ${workspace}/tmp/acmupdate/wars/${war_name} > /dev/null 
