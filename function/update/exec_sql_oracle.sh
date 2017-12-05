@@ -1,4 +1,6 @@
 #!/bin/bash
+
+shell_log "== start oracle =="
 ### parameter
 config_file_path="${workspace}/tmp/acmupdate/sqls/database.ini"
 ### end of parameter
@@ -26,5 +28,5 @@ fi
 if [[ -n $Ora_Error ]];then
     /bin/false || exit 1   
 fi
-
+shell_log "== end of oracle =="
 cd ${workspace}

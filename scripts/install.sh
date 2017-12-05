@@ -76,7 +76,7 @@ sql_log(){
 # 若需要在子shell进程中使用当前环境中的变量或者函数，则必须使用source执行脚本而不能使用sh
 
 config_file_path="${workspace}/tmp/acmupdate/sqls/database.ini"
-exec_host=$(cat $config_file_path|sed -n '2p'|cut -d'=' -f2)
+exec_host=$(grep exec_host $config_file_path|cut -d'=' -f2)
 if  [[ "x$exec_sql" == "x0" ]] && [[ $ip_addr == ${exec_host}  ]] && [[ "x$db_type" == "x0" ]];then  # 执行sql
     shell_log "start  exec_sql_oracle .."
     source ${workspace}${function}/update/exec_sql_oracle.sh
@@ -84,6 +84,11 @@ fi
 if  [[ "x$exec_sql" == "x0" ]] && [[ $ip_addr == ${exec_host}  ]] && [[ "x$db_type" == "x1" ]];then  # 执行sql
     shell_log "start  exec_sql_mysql .."
     source ${workspace}${function}/update/exec_sql_mysql.sh
+fi
+if  [[ "x$exec_sql" == "x0" ]] && [[ $ip_addr == ${exec_host}  ]] && [[ "x$db_type" == "x2" ]];then  # both
+    shell_log "start  exec_sql_all .."
+    source ${workspace}${function}/update/exec_sql_mysql.sh
+    source ${workspace}${function}/update/exec_sql_oracle.sh
 fi
 
 if [[  "x$mode" == "x0" ]];then  # update 更新应用
