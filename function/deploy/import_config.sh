@@ -1,13 +1,10 @@
 #!/bin/bash
 #-----------------------------------------------------------------
 # Filename:    install.sh
-# Version:    2.2.1
 # Date:        2017/10/30
-# Author:      ZhaoPeng
+# Author:      赵鹏
 # Description: 
 #-----------------------------------------------------------------
-# version 2.1   add  logging function
-# version 2.2.1  update and deploy  combined
 
 workspace=`pwd`
 template_path="${workspace}/tmp/acmupdate/wars/conf"

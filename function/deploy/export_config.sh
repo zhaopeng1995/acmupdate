@@ -1,18 +1,15 @@
 #!/bin/bash
 #-----------------------------------------------------------------
 # Filename:    install.sh
-# Version:    2.2.1
 # Date:        2017/10/30
-# Author:      ZhaoPeng
+# Author:      赵鹏
 # Description: 
 #-----------------------------------------------------------------
-# version 2.1   add  logging function
-# version 2.2.1  update and deploy  combined
 
 workspace=`pwd`
 app_check=${workspace}/tmp/acmupdate/info/app_check.txt
 rm -rf ${app_check} && touch ${app_check}
-config_files=("ares-app-config.xml" "server.properties" "log4j.properties")
+config_files=("ares-app-config.xml" "server.properties" "log4j.properties" "server.xml" "catalina.sh")
 # 获取app_name ，过滤备份目录
 for app_name in `ls  ${workspace}/deploy|egrep [a-zA-Z]|egrep -v [0-9]$|egrep -v bak$`
 do
@@ -31,6 +28,8 @@ do
     do
         [ -f ${app_path}/WEB-INF/classes/$config_file ]  && cp -p  ${app_path}/WEB-INF/classes/$config_file ${config_path}
         [ -f ${app_path}/WEB-INF/conf/$config_file ]  && cp  -p ${app_path}/WEB-INF/conf/$config_file ${config_path}
+        [ -f ${tom_path}/conf/$config_file ]  && cp  -p ${tom_path}/conf/$config_file  ${config_path}
+        [ -f ${tom_path}/bin/$config_file ]  && cp  -p ${tom_path}/bin/$config_file  ${config_path}
     done
     
 done

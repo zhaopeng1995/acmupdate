@@ -1,17 +1,14 @@
 #!/bin/bash
 #-----------------------------------------------------------------
-# Filename:    install.sh
-# Version:    2.2.2
-# Date:        2017/08/23
-# Author:      ZhaoPeng
+# Filename:     install.sh
+# Version:      2.2.3
+# LatestModify: 2017/08/23
+# Author:       ZhaoPeng
 # Description: 
 #-----------------------------------------------------------------
-# version 2.1   add  logging function
-# version 2.2.1  update and deploy  combined
-# version 2.2.2  exec sqlfile
 
 # user=`whoami`
-ip_addr=`python  ${workspace}${function}/common/get_ip_address.py eth0`  # todo : 通过内置变量${primary_ip_address}获取ip地址取出以解除网卡名称限制
+ip_addr=$(ifconfig | grep "inet addr" | awk '{ print $2}' | awk -F: '{print $2}'|grep -v 127.0.0.1|egrep -o "10\..*|192\..*|172\..*") 
 
 # 20171023
 mode=${mode}
@@ -20,52 +17,24 @@ function=${function}
 info=${info}
 basicapp=${basicapp}
 config=${config}
+share_dir=${share_dir}
 
 ##添加日志功能-20170823
+ACM_LOG_PATH="${share_dir}/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"  # 共享目录
+SQL_LOG_PATH="${share_dir}/acmupdate_logs/${user}_sql_$(date +%Y-%m-%d).log"  # sql日志目录
 
-if [ $user = "cprs" ] || [ $user = "whly" ];then
-        if [ -d /share/update_deploy_wars/acmupdate_logs/ ];then
-            
-            ACM_LOG_PATH="/share/update_deploy_wars/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"  # 产权的共享目录
-            SQL_LOG_PATH="/share/update_deploy_wars/acmupdate_logs/${user}_sql_$(date +%Y-%m-%d).log"  # sql日志目录
-        else
-            mkdir -p /share/update_deploy_wars/acmupdate_logs/
-            
-            ACM_LOG_PATH="/share/update_deploy_wars/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"  # 产权的共享目录
-        fi
+# 如果目录不存在，则创建
+[ ! -d $(dirname $ACM_LOG_PATH) ]  && mkdir -p $(dirname $ACM_LOG_PATH)
+[ ! -d $(dirname $SQL_LOG_PATH) ]  && mkdir -p $(dirname $SQL_LOG_PATH)
 
-elif [ $user = "gqzc" ] || [ $user = "nsfe" ] || [ $user = "emall" ] || [ $user = "nsjgt" ] || [ $user = "bplt" ] ;then
-        if [ -d /data/acmupdate_logs/ ];then
-            ACM_LOG_PATH="/data/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"  # 众筹的共享目录
-        else
-            mkdir -p /data/acmupdate_logs/
-            ACM_LOG_PATH="/data/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"  # 众筹的共享目录
-        fi
-
-
-elif [ $user = "exchange" ] || [ $user = "edmp" ] || [[ $user = "zk-exchange" ]];then
-        if [ -d /share/acmupdate_logs/ ];then
-            ACM_LOG_PATH="/share/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"   # 机构通米宝联交运共享目录
-        else
-            mkdir -p /share/acmupdate_logs/
-            ACM_LOG_PATH="/share/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"   # 机构通米宝联交运共享目录
-        fi
-
-elif [ $user = "xhjy" ] ;then 
-        if [  -d /{workspace}/xhjy/share/acmupdate_logs ];then
-            ACM_LOG_PATH="/{workspace}/xhjy/share/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"   # 大宗现货交易共享目录
-        else
-            mkdir -p /{workspace}/xhjy/share/acmupdate_logs
-            ACM_LOG_PATH="/{workspace}/xhjy/share/acmupdate_logs/${user}_$(date +%Y-%m-%d).log"   # 大宗现货交易共享目录
-        fi
-fi 
-
-# 记录脚本运行日志
+# 记录脚本运行日志函数
 shell_log(){
     LOG_INFO=$1
     echo "[$(date "+%Y-%m-%d %H:%M:%S:%N")] [${ip_addr}] -- ${LOG_INFO}" >> ${ACM_LOG_PATH}
 }
-# 记录sql执行日志
+
+# 记录sql执行日志函数
+#  参数：  para1: sql文件名 para2: 用户  para3: 执行日志信息
 sql_log(){
     SQLFILE=$1
     LOG_INFO=$3

@@ -1,12 +1,25 @@
 #-----------------------------------------------------------------
 # Filename:    install_jdk.sh
-# Version:    1.0
 # Date:        2017/10/23
-# Author:      dbird
+# Author:      赵鹏
 # Description: deploy wars and tomcats in acm system
 #-----------------------------------------------------------------
-#Version 1.0
-#The first one , deploy wars and tomcats
+
+# 根据http端口号获取ajp端口号  default: 8009
+function get_ajp_port()
+{
+    http_port=$1
+    let ajp_port=http_port+1000
+    echo $ajp_port
+}
+
+# 根据http端口号获取shutodwn端口号 default: 8005
+function get_shutdown_port()
+{
+    http_port=$1
+    let shutdown_port=http_port-1000
+    echo $shutdown_port
+}
 
 shell_log  "====开始部署wars和tomcats===="
 deploy_file_path=${workspace}${config}/deploy.txt
@@ -26,7 +39,7 @@ DeployPath=${workspace}/deploy
 LogPath=${workspace}/logs
 tomcat_file=`ls ${workspace}${basicapp}|grep apache-tomcat-.*`
 
-# 如果目录不存在，创建目录
+# 创建目录
 [[ ! -d ${TomcatPath} ]]  &&  mkdir -p  ${TomcatPath}
 [[ ! -d ${DeployPath} ]]  &&  mkdir -p  ${DeployPath}
 [[ ! -d ${LogPath} ]]  &&  mkdir -p  ${LogPath}
@@ -36,16 +49,26 @@ if [[ ${deploy_war_nums} -gt 0  ]];then
 
     for  iter_i  in `seq 1 1 ${deploy_war_nums}`
     do
-        deploy_name_port=`echo $wars|awk -v count=${iter_i} -F','  '{print $count}'`  # dalidao:8080
-        deploy_name=`echo $deploy_name_port|cut -d',' -f1` # 新项目部署应用名字和war包名字保持一致
-        deploy_port=`echo $deploy_name_port|cut -d',' -f2|tr -d '\r'`  # 获取应用端口号
-        war_name=`ls ${workspace}/tmp/acmupdate/wars/ | egrep "${deploy_name}[\.|_|-]v?([0-9])+.*war$"`  # todo:  验证正则匹配的准确性，现有匹配规则可能未覆盖到全部项目的包
+        deploy_name_port=`echo $wars|awk -v count=${iter_i} -F','  '{print $count}'`  # 20171127增加端口号
+        deploy_name=`echo ${deploy_name_port}|cut -d':' -f1`  # 新项目部署应用名字和war包名字保持一致
+        deploy_http_port=`echo ${deploy_name_port}|cut -d':' -f2`  # 端口号按照部署规范填写
+        deploy_ajp_port=`get_ajp_port $deploy_http_port`
+        deploy_shutdown_port=`get_shutdown_port $deploy_http_port`
+        war_name=`ls ${workspace}/tmp/acmupdate/wars/ | egrep "${deploy_name}[\.|_|-]v?([0-9])+.*[war|zip]$"`  # 20171127新增zip格式包
         shell_log "匹配到的war名字是${war_name}"
         unzip -o  -d ${workspace}/deploy/${deploy_name}  ${workspace}/tmp/acmupdate/wars/${war_name} > /dev/null 
         shell_log "解压war包${war_name}"
         tar xzvf ${workspace}${basicapp}/${tomcat_file} -C  ${TomcatPath} > /dev/null
         cd ${TomcatPath} && mv `echo $tomcat_file|awk -F'.tar.gz' '{print $1}'`  tomcat-${deploy_name}
 
+        shell_log "修改${TomcatPath}/tomcat-${deploy_name}/conf下的server.xml"
+        sed -i 's/port="8009"/port="'"${deploy_ajp_port}"'"/g' ${TomcatPath}/tomcat-${deploy_name}/conf/server.xml  # 修改ajp端口 default:8009
+        sed -i 's/port="8005"/port="'"${deploy_shutdown_port}"'"/g' ${TomcatPath}/tomcat-${deploy_name}/conf/server.xml  # 修改shutdown端口  default:8005
+        sed -i 's/port="8080"/port="'"${deploy_http_port}"'"/g' ${TomcatPath}/tomcat-${deploy_name}/conf/server.xml  # 修改http端口  default:8080
+        # server.xml添加docBase
+        doc_base_str="<Context path=\"/\"  docBase=\"${DeployPath}/${deploy_name}\" />"
+        sed  -i '/<\/Host>/i \\t'"${doc_base_str}"'' ${TomcatPath}/tomcat-${deploy_name}/conf/server.xml
+        
     done
     if [ -d ${DeployPath}/$deploy_name ]  && [ -d $TomcatPath/tomcat-$deploy_name ] ;then
         shell_log "应用${deploy_name}部署完成"        

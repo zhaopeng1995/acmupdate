@@ -18,7 +18,7 @@ if [[ $? -ne 0 ]];then
     exit 1
 fi
 
-for sqlfile in $(ls $sql_path)
+for sqlfile in $(ls $sql_path|sort -n)
 do
     res=$(mysql -u$username -p${password}  -h${host} ${database}  --default-character-set=utf8  2>&1 < ${sql_path}/${sqlfile})
     if [[ $? -ne 0 ]] ;then
